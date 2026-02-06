@@ -1,232 +1,98 @@
-# 「奢り自販機マッチングアプリ」仕様書
+# 「奢り自販機マッチングアプリ」をLambda×DynamoDBで作ってみた
 
-## 1. 概要
+社内の福利厚生「奢り自販機」の相手を自動マッチングするサーバーレスアプリケーション。
 
-社内の福利厚生「奢り自販機」を活用するための社員マッチングアプリ。
-社員2人1組でカードを同時にタッチすると無料でドリンクがもらえる仕組みに対し、一緒に行く相手を自動マッチングする。
-
----
-
-## 2. 利用ルール
-
-| 項目 | 内容 |
-|------|------|
-| 利用可能日 | 毎週 月・水・金（固定） |
-| 利用可能時間 | 9:30〜17:30（11:30〜13:30を除く） |
-| 時間枠 | 30分単位 |
-| 利用回数 | 1人1日1回まで |
-
-### 選択可能な時間枠（12枠）
-
-**午前（4枠）**
-| # | 時間枠 |
-|---|--------|
-| 1 | 09:30〜10:00 |
-| 2 | 10:00〜10:30 |
-| 3 | 10:30〜11:00 |
-| 4 | 11:00〜11:30 |
-
-**午後（8枠）**
-| # | 時間枠 |
-|---|--------|
-| 5 | 13:30〜14:00 |
-| 6 | 14:00〜14:30 |
-| 7 | 14:30〜15:00 |
-| 8 | 15:00〜15:30 |
-| 9 | 15:30〜16:00 |
-| 10 | 16:00〜16:30 |
-| 11 | 16:30〜17:00 |
-| 12 | 17:00〜17:30 |
-
----
-
-## 3. ユーザーフロー
-
-### 3.1 初回：ユーザー登録
-1. ユーザーがTeams上で登録フォームに入力
-2. 以下の情報を登録（永続データ）
-   - メールアドレス（識別子として使用）
-   - 氏名
-   - 部署
-   - 年次（入社年度）
-   - 性別
-   - 普段いる階
-
-### 3.2 毎週の利用フロー
-1. **希望登録**：前日までにTeams上で出社日＋希望時間枠を送信
-   - 複数の時間枠を選択可能（例：10:00〜10:30 と 15:00〜15:30）
-   - 月・水・金それぞれに希望を出せる
-2. **マッチング**：当日朝8:00にLambdaバッチが実行
-3. **結果通知**：マッチング結果がTeamsで通知される
-   - 成功時：相手の名前・時間枠が表示される
-   - 失敗時：「今回はマッチング相手が見つかりませんでした」と通知
-4. **実行**：マッチングされた2人で自販機へ行きカードをタッチ
-
----
-
-## 4. マッチングロジック
-
-### 4.1 基本ルール
-- 同じ時間枠を希望した人同士でペアを組む
-- 1人1日1ペアのみ
-- 奇数人の場合、1人はマッチングなし
-
-### 4.2 優先度スコアリング
-同じ時間枠に複数人いる場合、以下のスコアで優先マッチング：
-
-| 条件 | スコア |
-|------|--------|
-| 同年次 | +3 |
-| 年次差±1年 | +2 |
-| 年次差±2年 | +1 |
-| 同じ階 | +2 |
-| 同性 | +1 |
-
-- スコアが高い組み合わせから順にペアを確定
-- 同スコアの場合はランダム
-
-### 4.3 複数時間枠を希望した場合
-- いずれか1つの時間枠でマッチング成立した時点で、他の時間枠の希望は取り消し
-- マッチング処理の優先順：午前の早い時間枠から順に処理
-
----
-
-## 5. システム構成
+## 構成図
 
 ```
 [Teams] → [API Gateway] → [Lambda] → [DynamoDB]
-                              ↓
-                        [Teams通知]
-
-※ インフラはTerraformで構築
+                             ↓
+          [EventBridge] → [Lambda] → [Teams通知]
+          (月水金 8:00)
 ```
 
-### 5.1 Lambda関数
-
-| 関数名 | トリガー | 役割 |
-|--------|---------|------|
-| registerUser | API Gateway (POST) | ユーザー登録 |
-| submitSchedule | API Gateway (POST) | 希望時間の登録 |
-| runMatching | EventBridge (cron: 毎朝8:00) | マッチング実行＋結果通知 |
-| getMatchResult | API Gateway (GET) | マッチング結果の取得 |
-
-### 5.2 DynamoDB テーブル設計
-
-#### Usersテーブル
-ユーザーの永続データを保存。
-
-| 属性 | 型 | 説明 |
-|------|-----|------|
-| **Email** (PK) | String | メールアドレス |
-| Name | String | 氏名 |
-| Department | String | 部署 |
-| JoinYear | Number | 入社年度 |
-| Gender | String | 性別 |
-| Floor | Number | 普段いる階 |
-| CreatedAt | String | 登録日時 |
-
-#### Schedulesテーブル
-各日の希望時間を保存。マッチングバッチで参照。
-
-| 属性 | 型 | 説明 |
-|------|-----|------|
-| **Date** (PK) | String | 日付（例：2026-02-07） |
-| **TimeSlot#Email** (SK) | String | 時間枠#メールアドレス |
-| Email | String | メールアドレス |
-| TimeSlot | String | 希望時間枠（例：10:00） |
-| Status | String | pending / matched / unmatched |
-
-#### Matchesテーブル
-マッチング結果を保存。
-
-| 属性 | 型 | 説明 |
-|------|-----|------|
-| **Date** (PK) | String | 日付（例：2026-02-07） |
-| **TimeSlot#MatchId** (SK) | String | 時間枠#マッチID（例：10:00#M001） |
-| User1Email | String | ペアの1人目 |
-| User2Email | String | ペアの2人目 |
-| TimeSlot | String | マッチした時間枠 |
-| CreatedAt | String | マッチング日時 |
-
----
-
-## 6. API設計
-
-### POST /users — ユーザー登録
-```json
-// Request
-{
-  "email": "tanaka@example.com",
-  "name": "田中太郎",
-  "department": "技術部",
-  "joinYear": 2025,
-  "gender": "male",
-  "floor": 5
-}
-
-// Response 200
-{
-  "message": "登録完了",
-  "email": "tanaka@example.com"
-}
-```
-
-### POST /schedules — 希望登録
-```json
-// Request
-{
-  "email": "tanaka@example.com",
-  "date": "2026-02-07",
-  "timeSlots": ["10:00", "15:00"]
-}
-
-// Response 200
-{
-  "message": "希望を登録しました",
-  "date": "2026-02-07",
-  "timeSlots": ["10:00", "15:00"]
-}
-```
-
-### GET /matches?email=tanaka@example.com&date=2026-02-07 — 結果取得
-```json
-// Response 200（マッチ成功時）
-{
-  "matched": true,
-  "date": "2026-02-07",
-  "timeSlot": "10:00",
-  "partner": {
-    "name": "鈴木花子",
-    "department": "企画部"
-  }
-}
-
-// Response 200（マッチ失敗時）
-{
-  "matched": false,
-  "date": "2026-02-07",
-  "message": "今回はマッチング相手が見つかりませんでした"
-}
-```
-
----
-
-## 7. 今後の展望（発表時点では未実装）
-
-- Teams Workflow との連携（希望登録・通知の自動化）
-- マッチング履歴を考慮（同じ相手とばかりにならないように）
-- 部署をまたいだマッチング優先（他部署交流の促進）
-- マッチング満足度のフィードバック機能
-
----
-
-## 8. 技術スタック
+## 技術スタック
 
 | カテゴリ | 技術 |
 |---------|------|
 | インフラ構築 | Terraform |
-| コンピュート | AWS Lambda (Node.js / TypeScript) |
+| コンピュート | AWS Lambda (Node.js 20 / TypeScript) |
 | データベース | Amazon DynamoDB |
-| API | Amazon API Gateway |
-| スケジューラ | Amazon EventBridge |
-| 通知 | Microsoft Teams（今後連携予定） |
+| API | Amazon API Gateway (HTTP API) |
+| スケジューラ | Amazon EventBridge Scheduler |
+
+## セットアップ
+
+### 1. Lambda関数のビルド
+
+```bash
+cd lambda
+npm install
+npm run build
+```
+
+### 2. Terraformでデプロイ
+
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+### 3. 動作確認
+
+デプロイ後に表示される API endpoint に対してリクエストを送信：
+
+```bash
+# ユーザー登録
+curl -X POST https://<api-endpoint>/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "tanaka@example.com",
+    "name": "田中太郎",
+    "department": "技術部",
+    "joinYear": 2025,
+    "gender": "male",
+    "floor": 5
+  }'
+
+# 希望登録
+curl -X POST https://<api-endpoint>/schedules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "tanaka@example.com",
+    "date": "2026-02-09",
+    "timeSlots": ["10:00", "15:00"]
+  }'
+
+# マッチング結果取得
+curl "https://<api-endpoint>/matches?email=tanaka@example.com&date=2026-02-09"
+```
+
+## プロジェクト構成
+
+```
+ogori-vending/
+├── terraform/
+│   ├── main.tf            # プロバイダー設定
+│   ├── variables.tf       # 変数定義
+│   ├── dynamodb.tf        # DynamoDBテーブル定義
+│   ├── lambda.tf          # Lambda関数 + IAMロール
+│   ├── api_gateway.tf     # API Gateway (HTTP API)
+│   └── eventbridge.tf     # EventBridge Scheduler
+├── lambda/
+│   ├── src/
+│   │   ├── registerUser.ts     # ユーザー登録
+│   │   ├── submitSchedule.ts   # 希望時間登録
+│   │   ├── runMatching.ts      # マッチング実行（バッチ）
+│   │   ├── getMatchResult.ts   # マッチング結果取得
+│   │   └── lib/
+│   │       ├── dynamodb.ts     # DynamoDB クライアント
+│   │       ├── types.ts        # 型定義・定数
+│   │       └── response.ts     # レスポンスヘルパー
+│   ├── build.mjs          # esbuild ビルドスクリプト
+│   ├── package.json
+│   └── tsconfig.json
+└── README.md
+```
