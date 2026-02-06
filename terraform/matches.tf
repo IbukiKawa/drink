@@ -21,13 +21,13 @@ resource "aws_dynamodb_table" "matches_table" {
     type = "S"
   }
   global_secondary_index {
-    name            = "matchingEmailIndex"
+    name            = "matchingUser1EmailIndex"
     hash_key        = "User1Email"
     range_key       = "Date"
     projection_type = "ALL"
   }
   global_secondary_index {
-    name            = "matchingEmailIndex"
+    name            = "matchingUser2EmailIndex"
     hash_key        = "User2Email"
     range_key       = "Date"
     projection_type = "ALL"
