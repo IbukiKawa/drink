@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { docClient } from "./lib/dynamodb";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import { UserEntity } from "./lib/types";
+import { UserEntity } from "./lib/userTypes";
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
   try {
