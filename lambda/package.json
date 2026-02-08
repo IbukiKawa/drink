@@ -11,7 +11,8 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.984.0",
-    "@aws-sdk/lib-dynamodb": "^3.984.0"
+    "@aws-sdk/lib-dynamodb": "^3.984.0",
+    "dayjs": "^1.11.19"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.160",
