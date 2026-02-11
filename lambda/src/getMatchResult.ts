@@ -19,7 +19,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     const asUser1 = await docClient.send(
       new QueryCommand({
         TableName: MATCHES_TABLE,
-        IndexName: "User1EmailIndex",
+        IndexName: "matchingUser1EmailIndex",
         KeyConditionExpression: "User1Email = :email AND #date = :date",
         ExpressionAttributeNames: { "#date": "Date" },
         ExpressionAttributeValues: {
@@ -32,7 +32,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     const asUser2 = await docClient.send(
       new QueryCommand({
         TableName: MATCHES_TABLE,
-        IndexName: "User2EmailIndex",
+        IndexName: "matchingUser2EmailIndex",
         KeyConditionExpression: "User2Email = :email AND #date = :date",
         ExpressionAttributeNames: { "#date": "Date" },
         ExpressionAttributeValues: {
