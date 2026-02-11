@@ -35,7 +35,7 @@ resource "aws_apigatewayv2_route" "route_lambda_schedule" {
 resource "aws_apigatewayv2_integration" "integration_lambda_match_result" {
   api_id                 = aws_apigatewayv2_api.api_gateway.id
   integration_type       = "AWS_PROXY"
-  integration_method     = "GET"
+  integration_method     = "POST"
   integration_uri        = aws_lambda_function.lambda_get_match_result.invoke_arn
   payload_format_version = "2.0"
 }

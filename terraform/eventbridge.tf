@@ -5,7 +5,7 @@ resource "aws_scheduler_schedule" "matching_schedule" {
     mode = "OFF"
   }
   schedule_expression          = "cron(0 8 ? * MON,WED,FRI *)"
-  schedule_expression_timezone = "Asia_Tokyo"
+  schedule_expression_timezone = "Asia/Tokyo"
   state                        = "DISABLED"
   target {
     arn      = aws_lambda_function.lambda_run_matching.arn
@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "eventbridge-lambda" {
       {
         Effect   = "Allow"
         Action   = "lambda:InvokeFunction"
-        Resource = aws_lambda_function.lambda_run_matching.arn
+        Resource = "${aws_lambda_function.lambda_run_matching.arn}"
       }
     ]
   })
