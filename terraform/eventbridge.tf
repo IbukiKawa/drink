@@ -6,7 +6,7 @@ resource "aws_scheduler_schedule" "matching_schedule" {
   }
   schedule_expression          = "cron(0 8 ? * MON,WED,FRI *)"
   schedule_expression_timezone = "Asia/Tokyo"
-  state                        = "DISABLED"
+  state                        = "ENABLED"
   target {
     arn      = aws_lambda_function.lambda_run_matching.arn
     role_arn = aws_iam_role.eventbridge_role.arn
