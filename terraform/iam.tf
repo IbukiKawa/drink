@@ -37,9 +37,9 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           "dynamodb:UpdateItem"
         ]
         Resource = [
-          "aws_dynamodb_table.user_table.arn",
-          "aws_dynamodb_table.schedules_table.arn",
-          "aws_dynamodb_table.matches_table.arn",
+          "${aws_dynamodb_table.user_table.arn}",
+          "${aws_dynamodb_table.schedules_table.arn}",
+          "${aws_dynamodb_table.matches_table.arn}",
           "${aws_dynamodb_table.matches_table.arn}/index/*"
         ]
       }
