@@ -14,6 +14,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         body: JSON.stringify({ error: `必須項目が不足してます: ${missing.join(",")}` }),
       };
     }
+
     const user: UserEntity = {
       Email: body.email,
       Name: body.name,
@@ -24,12 +25,23 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
       CreatedAt: new Date().toISOString(),
     };
 
-    await docClient.send(
-      new PutCommand({
-        TableName: process.env.USERS_TABLE,
-        Item: user,
-      }),
-    );
+    try {
+      await docClient.send(
+        new PutCommand({
+          TableName: process.env.USERS_TABLE,
+          Item: user,
+          ConditionExpression: "attribute_not_exists(Email)",
+        })
+      );
+    } catch (error: any) {
+      if (error.name === "ConditionalCheckFailedException") {
+        return {
+          statusCode: 409,
+          body: JSON.stringify({ error: "このメールアドレスは既に登録されています" }),
+        };
+      }
+      throw error;
+    }
 
     return {
       statusCode: 200,
