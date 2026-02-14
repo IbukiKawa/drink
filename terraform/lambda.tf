@@ -37,6 +37,7 @@ resource "aws_lambda_function" "lambda_submit_schedule" {
   environment {
     variables = {
       SCHEDULES_TABLE = aws_dynamodb_table.schedules_table.name
+      USERS_TABLE     = aws_dynamodb_table.user_table.name
     }
   }
 }
