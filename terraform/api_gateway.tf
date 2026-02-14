@@ -1,7 +1,12 @@
 resource "aws_apigatewayv2_api" "api_gateway" {
   name          = "drink-http-api"
   protocol_type = "HTTP"
-
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_headers = ["Content-Type"]
+    max_age       = 300
+  }
 }
 
 resource "aws_apigatewayv2_integration" "integration_lambda_user" {
