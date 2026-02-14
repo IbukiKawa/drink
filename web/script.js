@@ -1,7 +1,7 @@
 // ============================================
 // API設定 - デプロイ時にURLを変更してください
 // ============================================
-const API_BASE = "https://YOUR-API-GATEWAY-URL";
+const API_BASE = "https://drink-matching-web-202516976897.s3.ap-northeast-1.amazonaws.com/index.html";
 
 // ============================================
 // 簡易パスワード保護
