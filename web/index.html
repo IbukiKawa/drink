@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>奢り自販機マッチング</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <div class="header">
+      <span class="header-icon">🥤</span>
+      <h1>奢り自販機マッチング</h1>
+      <p>同僚とのコーヒーブレイクをもっと楽しく</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="register">👤 ユーザー登録</button>
+      <button class="tab-btn" data-tab="schedule">📅 希望時間登録</button>
+      <button class="tab-btn" data-tab="result">🎉 結果確認</button>
+    </div>
+
+    <!-- TAB 1: User Registration -->
+    <div id="tab-register" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <h2>👤 ユーザー登録</h2>
+          <p>初回のみ入力してください</p>
+        </div>
+        <div class="card-body">
+          <form id="registerForm">
+            <div class="section-label">基本情報</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>名前 <span class="required">*</span></label>
+                <input type="text" id="reg-name" placeholder="例：田中太郎" required>
+              </div>
+              <div class="form-group">
+                <label>メールアドレス <span class="required">*</span></label>
+                <input type="email" id="reg-email" placeholder="例：tanaka@example.com" required>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top:20px">所属情報</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>部署 <span class="required">*</span></label>
+                <select id="reg-department" required>
+                  <option value="">選択してください</option>
+                  <option value="金融">金融</option>
+                  <option value="製造">製造</option>
+                  <option value="エンタープライズ1">エンタープライズ1</option>
+                  <option value="エンタープライズ2">エンタープライズ2</option>
+                  <option value="エンタープライズ3">エンタープライズ3</option>
+                  <option value="Xイノベーション">Xイノベーション</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>入社年度 <span class="required">*</span></label>
+                <select id="reg-joinYear" required>
+                  <option value="">選択してください</option>
+                  <option value="2020">2020年</option>
+                  <option value="2021">2021年</option>
+                  <option value="2022">2022年</option>
+                  <option value="2023">2023年</option>
+                  <option value="2024">2024年</option>
+                  <option value="2025">2025年</option>
+                  <option value="2026">2026年</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>性別 <span class="required">*</span></label>
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input type="radio" name="gender" id="gender-m" value="男" required>
+                    <label for="gender-m">男</label>
+                  </div>
+                  <div class="radio-option">
+                    <input type="radio" name="gender" id="gender-f" value="女">
+                    <label for="gender-f">女</label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>勤務フロア <span class="required">*</span></label>
+                <select id="reg-floor" required>
+                  <option value="">選択してください</option>
+                  <option value="3">3階</option>
+                  <option value="4">4階</option>
+                  <option value="5">5階</option>
+                  <option value="6">6階</option>
+                  <option value="7">7階</option>
+                  <option value="8">8階</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="registerBtn">
+              <span class="btn-text">✅ 登録する</span>
+              <div class="spinner"></div>
+            </button>
+            <div id="register-result" class="result-message"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Schedule Submission -->
+    <div id="tab-schedule" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>📅 希望時間登録</h2>
+          <p>参加したい時間帯を選んでください</p>
+        </div>
+        <div class="card-body">
+          <form id="scheduleForm">
+            <div class="form-row single">
+              <div class="form-group">
+                <label>メールアドレス <span class="required">*</span></label>
+                <input type="email" id="sch-email" placeholder="登録済みのメールアドレス" required>
+              </div>
+            </div>
+
+            <div class="form-row single">
+              <div class="form-group">
+                <label>参加日 <span class="required">*</span></label>
+                <input type="date" id="sch-date" class="date-input" required>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top:20px">希望時間帯（複数選択可）</div>
+
+            <div class="time-section-title">🌅 午前</div>
+            <div class="time-grid">
+              <div class="time-option">
+                <input type="checkbox" id="t-0930" value="09:30">
+                <label for="t-0930">09:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1000" value="10:00">
+                <label for="t-1000">10:00</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1030" value="10:30">
+                <label for="t-1030">10:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1100" value="11:00">
+                <label for="t-1100">11:00</label>
+              </div>
+            </div>
+
+            <div class="time-section-title">🌆 午後</div>
+            <div class="time-grid">
+              <div class="time-option">
+                <input type="checkbox" id="t-1330" value="13:30">
+                <label for="t-1330">13:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1400" value="14:00">
+                <label for="t-1400">14:00</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1430" value="14:30">
+                <label for="t-1430">14:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1500" value="15:00">
+                <label for="t-1500">15:00</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1530" value="15:30">
+                <label for="t-1530">15:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1600" value="16:00">
+                <label for="t-1600">16:00</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1630" value="16:30">
+                <label for="t-1630">16:30</label>
+              </div>
+              <div class="time-option">
+                <input type="checkbox" id="t-1700" value="17:00">
+                <label for="t-1700">17:00</label>
+              </div>
+            </div>
+
+            <p class="time-hint">※ 多く選ぶほどマッチングしやすくなります</p>
+
+            <button type="submit" class="submit-btn" id="scheduleBtn">
+              <span class="btn-text">✅ 登録する</span>
+              <div class="spinner"></div>
+            </button>
+            <div id="schedule-result" class="result-message"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Match Result -->
+    <div id="tab-result" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>🎉 マッチング結果</h2>
+          <p>本日のマッチング結果を確認しましょう</p>
+        </div>
+        <div class="card-body">
+          <form id="resultForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>メールアドレス <span class="required">*</span></label>
+                <input type="email" id="res-email" placeholder="登録済みのメールアドレス" required>
+              </div>
+              <div class="form-group">
+                <label>日付 <span class="required">*</span></label>
+                <input type="date" id="res-date" class="date-input" required>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="resultBtn">
+              <span class="btn-text">🔍 結果を確認</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+
+          <div id="match-result" class="result-message"></div>
+
+          <div id="match-card" class="match-card">
+            <div class="match-time">
+              <div class="time-label">待ち合わせ時間</div>
+              <div class="time-value" id="match-time-val"></div>
+            </div>
+            <div class="match-partner">
+              <div style="font-size:32px">👤</div>
+              <div class="partner-name" id="match-partner-name"></div>
+              <div class="partner-details">
+                <span>🏢 <span id="match-partner-dept"></span></span>
+                <span>🏗️ <span id="match-partner-floor"></span>階</span>
+              </div>
+            </div>
+            <p style="text-align:center;margin-top:16px;font-weight:600;color:var(--blue-600)">
+              ☕ 自販機前で待ち合わせしましょう！
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
